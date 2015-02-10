@@ -43,7 +43,6 @@ private enum DecorationKind: String {
 public class GridLayout: UICollectionViewLayout {
     
     public enum ZIndex: Int {
-        
         case Background = -100
         case Item = 1
         case Supplement = 100
@@ -51,24 +50,6 @@ public class GridLayout: UICollectionViewLayout {
         case ItemPinned = 9900
         case SupplementPinned = 10000
         case DecorationPinned = 11000
-        
-        init(category: UICollectionElementCategory, pinned: Bool = false) {
-            switch (category, pinned) {
-            case (.SupplementaryView, false):
-                self = .Supplement
-            case (.DecorationView, false):
-                self = .Decoration
-            case (.Cell, true):
-                self = .ItemPinned
-            case (.SupplementaryView, true):
-                self = .SupplementPinned
-            case (.DecorationView, true):
-                self = .DecorationPinned
-            default:
-                self = .Item
-            }
-        }
-        
     }
     
     private class func defaultPinnableBorderColor() -> UIColor {
@@ -829,9 +810,27 @@ public class GridLayout: UICollectionViewLayout {
         }
     }
 
+
+    private func zIndex(#category: UICollectionElementCategory, pinned: Bool = false) -> ZIndex {
+        switch (category, pinned) {
+        case (.SupplementaryView, false):
+            return .Supplement
+        case (.DecorationView, false):
+            return .Decoration
+        case (.Cell, true):
+            return .ItemPinned
+        case (.SupplementaryView, true):
+            return .SupplementPinned
+        case (.DecorationView, true):
+            return .DecorationPinned
+        default:
+            return .Item
+        }
+    }
+
     private func finalizePinning(#attributes: Attributes, offset: Int, pinned: Bool = false) {
-        let zIndex = ZIndex(category: attributes.representedElementCategory, pinned: pinned)
-        attributes.zIndex = zIndex.rawValue - offset - 1
+        let z = zIndex(category: attributes.representedElementCategory, pinned: pinned)
+        attributes.zIndex = z.rawValue - offset - 1
         
         let isPinned = attributes.frame.minY !~== attributes.pinning.unpinnedY
         attributes.pinning.isPinned = isPinned
