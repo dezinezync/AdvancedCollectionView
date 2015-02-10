@@ -35,30 +35,31 @@ private func rround<T: Scalable>(value: T, scale: T = T.identityScalar, function
 
 // MARK: Approximate equality (for UI purposes)
 
-public protocol ApproximatelyEquatable: AbsoluteValuable, Comparable {
-    static var accuracy: Self { get }
+public protocol RelativeErrorType: Comparable {
+    var isRoundingError: Bool { get }
+    func -(lhs: Self, rhs: Self) -> Self
 }
 
-extension Float: ApproximatelyEquatable {
-    public static let accuracy = FLT_EPSILON
+extension Float: RelativeErrorType {
+    public var isRoundingError: Bool { return abs(self) <= FLT_EPSILON }
 }
 
-extension Double: ApproximatelyEquatable {
-    public static let accuracy = DBL_EPSILON
+extension Double: RelativeErrorType {
+    public var isRoundingError: Bool { return abs(self) <= DBL_EPSILON }
 }
 
-extension CGFloat: ApproximatelyEquatable {
-    public static let accuracy = CGFloat(CGFloat.NativeType.accuracy)
+extension CGFloat: RelativeErrorType {
+    public var isRoundingError: Bool { return native.isRoundingError }
 }
 
 infix operator ~== { associativity none precedence 130 }
 infix operator !~== { associativity none precedence 130 }
 
-public func ~== <T: ApproximatelyEquatable>(lhs: T, rhs: T) -> Bool {
-    return T.abs(rhs - lhs) <= T.accuracy
+public func ~==<T: RelativeErrorType>(lhs: T, rhs: T) -> Bool {
+    return (rhs - lhs).isRoundingError
 }
 
-public func ~== <T: ApproximatelyEquatable>(lhs: T?, rhs: T?) -> Bool {
+public func ~== <T: RelativeErrorType>(lhs: T?, rhs: T?) -> Bool {
     switch (lhs, rhs) {
     case (.Some(let l), .Some(let r)):
         return l ~== r
@@ -67,11 +68,11 @@ public func ~== <T: ApproximatelyEquatable>(lhs: T?, rhs: T?) -> Bool {
     }
 }
 
-public func !~== <T: ApproximatelyEquatable>(lhs: T, rhs: T) -> Bool {
+public func !~== <T: RelativeErrorType>(lhs: T, rhs: T) -> Bool {
     return !(lhs ~== rhs)
 }
 
-public func !~== <T: ApproximatelyEquatable>(lhs: T?, rhs: T?) -> Bool {
+public func !~== <T: RelativeErrorType>(lhs: T?, rhs: T?) -> Bool {
     return !(lhs ~== rhs)
 }
 
