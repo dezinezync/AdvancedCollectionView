@@ -90,6 +90,7 @@ public struct SupplementaryMetrics {
         return storage.kind
     }
     
+    /// Copy-on write setter
     private mutating func modifyStorage(fn: (SupplementaryMetricsStorage -> ())) {
         if isUniquelyReferencedNonObjC(&storage) {
             fn(storage)
