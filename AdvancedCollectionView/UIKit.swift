@@ -13,25 +13,23 @@ struct Constants {
     static let isiOS7 = floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_6_1 && !isiOS8
 }
 
-private func _userInterfaceLayoutDirection() -> UIUserInterfaceLayoutDirection {
-    let direction = NSParagraphStyle.defaultWritingDirectionForLanguage(nil)
-    switch NSParagraphStyle.defaultWritingDirectionForLanguage(nil) {
-    case .LeftToRight:
-        return .LeftToRight
-    case .RightToLeft:
-        return .RightToLeft
-    case .Natural:
-        if let localization = NSBundle.mainBundle().preferredLocalizations.first as? String {
-            return NSLocale.characterDirectionForLanguage(localization) == .RightToLeft ? .RightToLeft : .LeftToRight
-        }
-        return .LeftToRight
-    }
-}
-
+/// Extension-safe user layout direction
 extension UIUserInterfaceLayoutDirection {
     
-    /// Extension-safe user layout direction
-    public static let userLayoutDirection: UIUserInterfaceLayoutDirection = _userInterfaceLayoutDirection()
+    public static let userLayoutDirection: UIUserInterfaceLayoutDirection = {
+        let direction = NSParagraphStyle.defaultWritingDirectionForLanguage(nil)
+        switch NSParagraphStyle.defaultWritingDirectionForLanguage(nil) {
+        case .LeftToRight:
+            return .LeftToRight
+        case .RightToLeft:
+            return .RightToLeft
+        case .Natural:
+            if let localization = NSBundle.mainBundle().preferredLocalizations.first as? String {
+                return NSLocale.characterDirectionForLanguage(localization) == .RightToLeft ? .RightToLeft : .LeftToRight
+            }
+            return .LeftToRight
+        }
+    }()
     
 }
 
